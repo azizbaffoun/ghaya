@@ -1,0 +1,199 @@
+/**
+ * Smooth Transitions for Sidebar and Language Switching
+ */
+
+/* Sidebar smooth transitions */
+.sidebar-transition {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-in-out;
+}
+
+/* Language switcher loading state */
+.language-switcher-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.language-switcher-loading .loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Smooth content transitions */
+.content-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* RTL/LTR smooth transitions */
+.rtl-transition {
+    transition: direction 0.3s ease-in-out;
+}
+
+/* Sidebar item hover effects */
+.sidebar-item {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+}
+
+.sidebar-item:hover {
+    transform: scale(1.02);
+}
+
+/* Language switch button transitions */
+.language-switch-btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.language-switch-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.language-switch-btn:active {
+    transform: translateY(0);
+}
+
+/* Smooth text transitions for translations */
+.translation-text {
+    transition: opacity 0.2s ease-in-out;
+}
+
+.translation-text.updating {
+    opacity: 0.7;
+}
+
+/* Sidebar overlay smooth transitions */
+.sidebar-overlay {
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Main content area transitions */
+.main-content {
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth icon transitions */
+.sidebar-icon {
+    transition: transform 0.2s ease-in-out;
+}
+
+.sidebar-item:hover .sidebar-icon {
+    transform: scale(1.1);
+}
+
+/* Language dropdown smooth transitions */
+.language-dropdown {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top right;
+}
+
+.language-dropdown-enter {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+}
+
+.language-dropdown-enter-active {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+.language-dropdown-leave {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+.language-dropdown-leave-active {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+}
+
+/* Smooth status button transitions */
+.status-button {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-button:hover {
+    transform: scale(1.05);
+}
+
+/* Loading states */
+.loading-state {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading-state::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Smooth page transitions */
+.page-transition {
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.page-transition.entering {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.page-transition.entered {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.page-transition.exiting {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+/* Responsive sidebar transitions */
+@media (max-width: 1023px) {
+    .sidebar-mobile {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .sidebar-mobile.closed {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar-mobile.open {
+        transform: translateX(0);
+    }
+}
+
+/* RTL specific transitions */
+[dir="rtl"] .sidebar-mobile.closed {
+    transform: translateX(100%);
+}
+
+[dir="rtl"] .sidebar-mobile.open {
+    transform: translateX(0);
+}
+
+/* Smooth focus transitions */
+.focus-transition {
+    transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.focus-transition:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+}
+
+/* Smooth color transitions */
+.color-transition {
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}

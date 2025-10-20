@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'email' => 'Email',
+    'password' => 'Mot de passe',
+    'remember_me' => 'Se souvenir de moi',
+    'forgot_password' => 'Mot de passe oublié ?',
+    'log_in' => 'Se connecter',
+    'register' => 'S\'inscrire',
+    'confirm_password' => 'Confirmer le mot de passe',
+    'reset_password' => 'Réinitialiser le mot de passe',
+    'send_reset_link' => 'Envoyer le lien de réinitialisation',
+    'verify_email' => 'Vérifier l\'email',
+    'verify_email_sent' => 'Un nouveau lien de vérification a été envoyé à votre adresse email.',
+    'resend_verification' => 'Renvoyer l\'email de vérification',
+    'logout' => 'Se déconnecter',
+    'login' => 'Connexion',
+    'name' => 'Nom',
+    'confirm_password_before' => 'Veuillez confirmer votre mot de passe avant de continuer.',
+    'password_reset' => 'Réinitialisation du mot de passe',
+    'email_address' => 'Adresse email',
+    'password_confirmation' => 'Confirmation du mot de passe',
+    'already_registered' => 'Déjà inscrit ?',
+    'forgot_your_password' => 'Mot de passe oublié ?',
+    'back_to_login' => 'Retour à la connexion',
+];

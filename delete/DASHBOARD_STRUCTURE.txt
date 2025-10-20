@@ -1,0 +1,112 @@
+YAKINE MODE ADMIN DASHBOARD STRUCTURE
+=====================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│                        TOP NAVIGATION BAR                       │
+│  [Logo] [Search] [Notifications] [Profile] [Logout]            │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────┬───────────────────────────────────────────────────┐
+│             │                                                   │
+│   SIDEBAR   │                MAIN CONTENT AREA                  │
+│             │                                                   │
+│  📊 Dashboard    ┌─────────────────────────────────────────┐    │
+│  📦 Products     │                                         │    │
+│  📁 Categories   │         DASHBOARD OVERVIEW              │    │
+│  🛒 Orders       │                                         │    │
+│  👥 Customers    │  ┌─────────┐ ┌─────────┐ ┌─────────┐   │    │
+│  ⚙️  Settings    │  │Products │ │ Orders  │ │Revenue  │   │    │
+│  👤 Profile      │  │   150   │ │   45    │ │ $12,450 │   │    │
+│                 │  └─────────┘ └─────────┘ └─────────┘   │    │
+│                 │                                         │    │
+│                 │  ┌─────────────────────────────────────┐ │    │
+│                 │  │        RECENT ORDERS                │ │    │
+│                 │  │  #YM20250110001 - $125.00 - Pending│ │    │
+│                 │  │  #YM20250110002 - $89.50 - Shipped │ │    │
+│                 │  │  #YM20250110003 - $200.00 - Paid   │ │    │
+│                 │  └─────────────────────────────────────┘ │    │
+│                 │                                         │    │
+│                 │  ┌─────────────────────────────────────┐ │    │
+│                 │  │        QUICK ACTIONS                │ │    │
+│                 │  │  [Add Product] [View Orders]        │ │    │
+│                 │  │  [Manage Categories] [Reports]      │ │    │
+│                 │  └─────────────────────────────────────┘ │    │
+│                 └─────────────────────────────────────────┘    │
+│                                                                 │
+│                 ┌─────────────────────────────────────────┐    │
+│                 │                                         │    │
+│                 │         PRODUCT MANAGEMENT              │    │
+│                 │                                         │    │
+│                 │  [Search] [Filter] [Sort] [Bulk Actions]│    │
+│                 │                                         │    │
+│                 │  ┌─────────────────────────────────────┐ │    │
+│                 │  │ Product List Table                  │ │    │
+│                 │  │ ┌─────┬─────────┬──────┬──────┐    │ │    │
+│                 │  │ │IMG  │ Name    │Price │Stock │    │ │    │
+│                 │  │ ├─────┼─────────┼──────┼──────┤    │ │    │
+│                 │  │ │[📷] │T-Shirt  │$25.00│ 150  │    │ │    │
+│                 │  │ │[📷] │Jeans    │$45.00│  75  │    │ │    │
+│                 │  │ │[📷] │Jacket   │$80.00│  30  │    │ │    │
+│                 │  │ └─────┴─────────┴──────┴──────┘    │ │    │
+│                 │  └─────────────────────────────────────┘ │    │
+│                 │                                         │    │
+│                 │  [Pagination: 1 2 3 4 5 Next]          │    │
+│                 └─────────────────────────────────────────┘    │
+│                                                                 │
+│                 ┌─────────────────────────────────────────┐    │
+│                 │                                         │    │
+│                 │         ORDER MANAGEMENT                │    │
+│                 │                                         │    │
+│                 │  [Status Filter] [Date Range] [Search] │    │
+│                 │                                         │    │
+│                 │  ┌─────────────────────────────────────┐ │    │
+│                 │  │ Order List Table                    │ │    │
+│                 │  │ ┌─────────┬─────────┬──────┬──────┐ │ │    │
+│                 │  │ │Order #  │Customer │Total │Status│ │ │    │
+│                 │  │ ├─────────┼─────────┼──────┼──────┤ │ │    │
+│                 │  │ │YM001    │John Doe │$125  │Pending│ │ │    │
+│                 │  │ │YM002    │Jane S.  │$89   │Shipped│ │ │    │
+│                 │  │ │YM003    │Bob W.   │$200  │Paid   │ │ │    │
+│                 │  │ └─────────┴─────────┴──────┴──────┘ │ │    │
+│                 │  └─────────────────────────────────────┘ │    │
+│                 └─────────────────────────────────────────┘    │
+│                                                                 │
+└─────────────┴───────────────────────────────────────────────────┘
+
+KEY FEATURES:
+=============
+
+1. RESPONSIVE DESIGN
+   - Desktop: Full sidebar + main content
+   - Tablet: Collapsible sidebar
+   - Mobile: Hamburger menu
+
+2. REAL-TIME UPDATES
+   - Live order notifications
+   - Stock level alerts
+   - System status updates
+
+3. ADVANCED FILTERING
+   - Search across all modules
+   - Date range filters
+   - Status filters
+   - Category filters
+
+4. BULK OPERATIONS
+   - Select multiple items
+   - Bulk status updates
+   - Mass delete/export
+   - Batch processing
+
+5. ANALYTICS & REPORTING
+   - Sales charts
+   - Product performance
+   - Customer analytics
+   - Revenue trends
+
+6. USER MANAGEMENT
+   - Role-based access (Admin/Worker)
+   - Permission controls
+   - Activity logging
+   - User profiles
+

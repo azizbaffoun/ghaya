@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'email' => 'البريد الإلكتروني',
+    'password' => 'كلمة المرور',
+    'remember_me' => 'تذكرني',
+    'forgot_password' => 'نسيت كلمة المرور؟',
+    'log_in' => 'تسجيل الدخول',
+    'register' => 'إنشاء حساب',
+    'confirm_password' => 'تأكيد كلمة المرور',
+    'reset_password' => 'إعادة تعيين كلمة المرور',
+    'send_reset_link' => 'إرسال رابط إعادة التعيين',
+    'verify_email' => 'التحقق من البريد الإلكتروني',
+    'verify_email_sent' => 'تم إرسال رابط تحقق جديد إلى عنوان بريدك الإلكتروني.',
+    'resend_verification' => 'إعادة إرسال بريد التحقق',
+    'logout' => 'تسجيل الخروج',
+    'login' => 'تسجيل الدخول',
+    'name' => 'الاسم',
+    'confirm_password_before' => 'يرجى تأكيد كلمة المرور قبل المتابعة.',
+    'password_reset' => 'إعادة تعيين كلمة المرور',
+    'email_address' => 'عنوان البريد الإلكتروني',
+    'password_confirmation' => 'تأكيد كلمة المرور',
+    'already_registered' => 'مسجل بالفعل؟',
+    'forgot_your_password' => 'نسيت كلمة المرور؟',
+    'back_to_login' => 'العودة لتسجيل الدخول',
+];
