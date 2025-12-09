@@ -18,7 +18,8 @@ class SetLocale
     public function handle(Request $request, Closure $next): Response
     {
         // Priority order: request parameter > user preference > session > browser > default
-        $locale = $request->get('lang');
+        // Support both 'lang' and 'hl' query parameters
+        $locale = $request->get('hl') ?? $request->get('lang');
         
         // If no request parameter, check user preference (if authenticated)
         if (!$locale && auth()->check()) {
