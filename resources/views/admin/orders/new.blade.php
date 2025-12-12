@@ -65,50 +65,9 @@
                     
                     <div class="space-y-2">
                         @php
-                            // Extract size and color from variant_name if available
-                            $size = null;
-                            $color = null;
-                            
-                            // If variant_name contains size/color info, try to extract it
-                            if ($item->variant_name && $item->variant_name !== 'Default') {
-                                $variantParts = explode(' - ', $item->variant_name);
-                                if (count($variantParts) >= 2) {
-                                    $color = $variantParts[0];
-                                    $size = $variantParts[1];
-                                } elseif (count($variantParts) === 1) {
-                                    // If only one part, it could be just color or just size
-                                    $color = $variantParts[0];
-                                }
-                            }
-                            
-                            // Function to convert color code to readable name
-                            function getColorName($colorCode) {
-                                $colorMap = [
-                                    '#000000' => 'Black',
-                                    '#FFFFFF' => 'White',
-                                    '#FF0000' => 'Red',
-                                    '#00FF00' => 'Green',
-                                    '#0000FF' => 'Blue',
-                                    '#FFFF00' => 'Yellow',
-                                    '#FF00FF' => 'Magenta',
-                                    '#00FFFF' => 'Cyan',
-                                    '#FFA500' => 'Orange',
-                                    '#800080' => 'Purple',
-                                    '#FFC0CB' => 'Pink',
-                                    '#A52A2A' => 'Brown',
-                                    '#808080' => 'Gray',
-                                    '#C0C0C0' => 'Silver',
-                                    '#FFD700' => 'Gold',
-                                ];
-                                
-                                // Check if it's a hex color code
-                                if (str_starts_with($colorCode, '#')) {
-                                    return $colorMap[$colorCode] ?? ucfirst(strtolower($colorCode));
-                                }
-                                
-                                // If it's already a color name, return as is
-                                return ucfirst(strtolower($colorCode));
-                            }
+                            $variant = \App\Helpers\VariantHelper::parseVariant($item->variant_name);
+                            $color = $variant['color'];
+                            $size = $variant['size'];
                         @endphp
                         
                         @if($size)
@@ -123,8 +82,8 @@
                             <span class="text-gray-500">Color:</span>
                             <div class="flex items-center">
                                 <div class="w-3 h-3 rounded-full border border-gray-300 mr-2" 
-                                     style="background-color: {{ str_starts_with($color, '#') ? $color : (strtolower($color) === 'black' ? '#000000' : (strtolower($color) === 'white' ? '#ffffff' : strtolower($color))) }}"></div>
-                                <span class="font-medium text-gray-700">{{ getColorName($color) }}</span>
+                                     style="background-color: {{ \App\Helpers\VariantHelper::getColorHex($color) }}"></div>
+                                <span class="font-medium text-gray-700">{{ \App\Helpers\VariantHelper::getColorName($color) }}</span>
                             </div>
                         </div>
                         @endif
@@ -474,18 +433,7 @@
                                                                 <!-- Product Variants (Color, Size, etc.) -->
                                                                 @if($item->variant_name)
                                                                     @php
-                                                                        // Parse variant name for display
-                                                                        $variantParts = explode(' - ', $item->variant_name);
-                                                                        $displayVariant = '';
-                                                                        if (count($variantParts) >= 2) {
-                                                                            $color = $variantParts[0];
-                                                                            $size = $variantParts[1];
-                                                                            $displayVariant = getColorName($color) . ' - ' . $size;
-                                                                        } elseif (count($variantParts) === 1) {
-                                                                            $displayVariant = getColorName($variantParts[0]);
-                                                                        } else {
-                                                                            $displayVariant = $item->variant_name;
-                                                                        }
+                                                                        $displayVariant = \App\Helpers\VariantHelper::formatVariant($item->variant_name);
                                                                     @endphp
                                                                     <div class="flex items-center space-x-4 mb-2">
                                                                         <div class="flex items-center space-x-2">
