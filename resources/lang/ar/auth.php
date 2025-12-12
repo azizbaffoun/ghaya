@@ -23,4 +23,6 @@ return [
     'already_registered' => 'مسجل بالفعل؟',
     'forgot_your_password' => 'نسيت كلمة المرور؟',
     'back_to_login' => 'العودة لتسجيل الدخول',
+    'welcome_back' => 'مرحباً',
+    'connect_to_account' => 'قم بتسجيل الدخول إلى حسابك',
 ];

@@ -23,4 +23,6 @@ return [
     'already_registered' => 'Déjà inscrit ?',
     'forgot_your_password' => 'Mot de passe oublié ?',
     'back_to_login' => 'Retour à la connexion',
+    'welcome_back' => 'Bienvenue',
+    'connect_to_account' => 'Connectez-vous à votre compte',
 ];

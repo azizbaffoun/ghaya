@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class FirstDeliverySetting extends Model
 {
@@ -43,7 +45,18 @@ class FirstDeliverySetting extends Model
      */
     public function getFirstDeliveryKeyAttribute($value)
     {
-        return $value ? Crypt::decryptString($value) : null;
+        if (!$value) {
+            return null;
+        }
+
+        try {
+            return Crypt::decryptString($value);
+        } catch (DecryptException $e) {
+            // If decryption fails (e.g., key changed or corrupted data), return null
+            // This allows the form to load and the user can re-enter the key
+            Log::warning('Failed to decrypt first_delivery_key: ' . $e->getMessage());
+            return null;
+        }
     }
 
     /**

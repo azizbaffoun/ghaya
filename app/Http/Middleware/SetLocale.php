@@ -33,7 +33,15 @@ class SetLocale
         
         // If still no locale, check browser header
         if (!$locale) {
-            $locale = $request->header('Accept-Language', 'fr');
+            $acceptLanguage = $request->header('Accept-Language');
+            if ($acceptLanguage) {
+                // Parse Accept-Language header (e.g., "en-US,en;q=0.9,fr;q=0.8")
+                $languages = explode(',', $acceptLanguage);
+                $primaryLang = trim(explode(';', $languages[0])[0]);
+                $locale = substr($primaryLang, 0, 2); // Get first 2 chars (e.g., "en" from "en-US")
+            } else {
+                $locale = 'fr'; // Default to French
+            }
         }
         
         // Validate locale exists and is active
