@@ -7,14 +7,21 @@ function openCategoryModal(categoryId = null) {
         isEditMode = categoryId !== null;
         currentCategoryId = categoryId;
         
+        const categoryModal = document.getElementById('categoryModal');
+        if (!categoryModal) return;
+        
         if (isEditMode) {
             loadCategoryData(categoryId);
-            document.getElementById('category-modal-title-text').textContent = 'Edit Category';
-            document.getElementById('category_save_text').textContent = 'Update Category';
+            const titleText = document.getElementById('category-modal-title-text');
+            const saveText = document.getElementById('category_save_text');
+            if (titleText) titleText.textContent = 'Edit Category';
+            if (saveText) saveText.textContent = 'Update Category';
         } else {
             resetForm();
-            document.getElementById('category-modal-title-text').textContent = 'Add Category';
-            document.getElementById('category_save_text').textContent = 'Save Category';
+            const titleText = document.getElementById('category-modal-title-text');
+            const saveText = document.getElementById('category_save_text');
+            if (titleText) titleText.textContent = 'Add Category';
+            if (saveText) saveText.textContent = 'Save Category';
         }
         
         categoryModal.classList.remove('hidden');
@@ -26,6 +33,132 @@ function closeCategoryModal() {
     categoryModal.classList.add('hidden');
     document.body.classList.remove('overflow-hidden');
     resetForm();
+}
+
+// Delete Modal Variables
+let deleteCategoryId = null;
+let deleteCategoryCard = null;
+
+// Delete Modal Functions
+function openDeleteCategoryModal(categoryId, categoryName, productsCount, childrenCount) {
+    deleteCategoryId = categoryId;
+    
+    // Find the category card element using data attribute
+    deleteCategoryCard = document.querySelector(`[data-category-id="${categoryId}"]`);
+    
+    const deleteModal = document.getElementById('deleteCategoryModal');
+    const deleteMessage = document.getElementById('delete-modal-message');
+    const warningInfo = document.getElementById('delete-warning-info');
+    const warningText = document.getElementById('delete-warning-text');
+    
+    if (!deleteModal || !deleteMessage) return;
+    
+    // Set message
+    deleteMessage.textContent = `Are you sure you want to delete "${categoryName}"? This action cannot be undone.`;
+    
+    // Show warnings if category has products or children
+    if (warningInfo && warningText) {
+        if (productsCount > 0 || childrenCount > 0) {
+            warningInfo.classList.remove('hidden');
+            let warningMessages = [];
+            if (productsCount > 0) {
+                warningMessages.push(`This category has ${productsCount} ${productsCount === 1 ? 'product' : 'products'}.`);
+            }
+            if (childrenCount > 0) {
+                warningMessages.push(`This category has ${childrenCount} ${childrenCount === 1 ? 'subcategory' : 'subcategories'}.`);
+            }
+            warningText.textContent = warningMessages.join(' ') + ' You must remove them first before deleting this category.';
+        } else {
+            warningInfo.classList.add('hidden');
+        }
+    }
+    
+    deleteModal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+}
+
+function closeDeleteCategoryModal() {
+    const deleteModal = document.getElementById('deleteCategoryModal');
+    if (deleteModal) {
+        deleteModal.classList.add('hidden');
+    }
+    document.body.classList.remove('overflow-hidden');
+    deleteCategoryId = null;
+    deleteCategoryCard = null;
+    
+    // Reset button state
+    const deleteBtn = document.getElementById('confirmDeleteCategory');
+    const deleteSpinner = document.getElementById('delete-loading-spinner');
+    const deleteText = document.getElementById('delete-button-text');
+    if (deleteBtn) {
+        deleteBtn.disabled = false;
+    }
+    if (deleteSpinner) {
+        deleteSpinner.classList.add('hidden');
+    }
+    if (deleteText) {
+        deleteText.textContent = 'Delete';
+    }
+}
+
+// Load Category Data for Editing
+function loadCategoryData(categoryId) {
+    fetch(`/admin/categories/${categoryId}/edit`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const category = data.category;
+            const categoryIdEl = document.getElementById('category_id');
+            const categoryNameEl = document.getElementById('category_name');
+            const categoryDescEl = document.getElementById('category_description');
+            const parentCategoryEl = document.getElementById('parent_category');
+            const sortOrderEl = document.getElementById('sort_order');
+            const isActiveEl = document.getElementById('category_is_active');
+            
+            if (categoryIdEl) categoryIdEl.value = category.id;
+            if (categoryNameEl) categoryNameEl.value = category.name || '';
+            if (categoryDescEl) categoryDescEl.value = category.description || '';
+            if (parentCategoryEl) parentCategoryEl.value = category.parent_id || '';
+            if (sortOrderEl) sortOrderEl.value = category.sort_order || 0;
+            if (isActiveEl) isActiveEl.checked = category.is_active;
+            
+            // Load existing image if available
+            if (category.image) {
+                const preview = document.getElementById('category_image_preview');
+                const previewImg = document.getElementById('category_preview_img');
+                if (preview && previewImg) {
+                    previewImg.src = category.image_url;
+                    preview.classList.remove('hidden');
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error loading category:', error);
+        if (typeof showNotification === 'function') {
+            showNotification('Error loading category data', 'error');
+        }
+    });
+}
+
+// Reset Form
+function resetForm() {
+    const categoryForm = document.getElementById('categoryForm');
+    if (categoryForm) {
+        categoryForm.reset();
+    }
+    const imagePreview = document.getElementById('category_image_preview');
+    if (imagePreview) {
+        imagePreview.classList.add('hidden');
+    }
+    const categoryId = document.getElementById('category_id');
+    if (categoryId) {
+        categoryId.value = '';
+    }
 }
 
 // Initialize when DOM is loaded
@@ -167,56 +300,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Load Category Data for Editing
-    function loadCategoryData(categoryId) {
-        fetch(`/admin/categories/${categoryId}/edit`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const category = data.category;
-                document.getElementById('category_id').value = category.id;
-                document.getElementById('category_name').value = category.name || '';
-                document.getElementById('category_description').value = category.description || '';
-                document.getElementById('parent_category').value = category.parent_id || '';
-                document.getElementById('sort_order').value = category.sort_order || 0;
-                document.getElementById('category_is_active').checked = category.is_active;
-                
-                // Load existing image if available
-                if (category.image) {
-                    const preview = document.getElementById('category_image_preview');
-                    const previewImg = document.getElementById('category_preview_img');
-                    previewImg.src = category.image_url;
-                    preview.classList.remove('hidden');
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Error loading category:', error);
-            showNotification('Error loading category data', 'error');
-        });
-    }
-
-    // Reset Form
-    function resetForm() {
-        if (categoryForm) {
-            categoryForm.reset();
-        }
-        const imagePreview = document.getElementById('category_image_preview');
-        if (imagePreview) {
-            imagePreview.classList.add('hidden');
-        }
-        const categoryId = document.getElementById('category_id');
-        if (categoryId) {
-            categoryId.value = '';
-        }
-    }
-
-    // Make resetForm globally accessible
-    window.resetForm = resetForm;
 
     // Notification System
     function showNotification(message, type = 'info') {
@@ -285,64 +368,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
 
-    // Delete Modal Functions
-    let deleteCategoryId = null;
-    let deleteCategoryCard = null;
-
-    function openDeleteCategoryModal(categoryId, categoryName, productsCount, childrenCount) {
-        deleteCategoryId = categoryId;
-        
-        // Find the category card element using data attribute
-        deleteCategoryCard = document.querySelector(`[data-category-id="${categoryId}"]`);
-        
-        const deleteModal = document.getElementById('deleteCategoryModal');
-        const deleteMessage = document.getElementById('delete-modal-message');
-        const warningInfo = document.getElementById('delete-warning-info');
-        const warningText = document.getElementById('delete-warning-text');
-        
-        // Set message
-        deleteMessage.textContent = `Are you sure you want to delete "${categoryName}"? This action cannot be undone.`;
-        
-        // Show warnings if category has products or children
-        if (productsCount > 0 || childrenCount > 0) {
-            warningInfo.classList.remove('hidden');
-            let warningMessages = [];
-            if (productsCount > 0) {
-                warningMessages.push(`This category has ${productsCount} ${productsCount === 1 ? 'product' : 'products'}.`);
-            }
-            if (childrenCount > 0) {
-                warningMessages.push(`This category has ${childrenCount} ${childrenCount === 1 ? 'subcategory' : 'subcategories'}.`);
-            }
-            warningText.textContent = warningMessages.join(' ') + ' You must remove them first before deleting this category.';
-        } else {
-            warningInfo.classList.add('hidden');
-        }
-        
-        deleteModal.classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
-    }
-
-    function closeDeleteCategoryModal() {
-        const deleteModal = document.getElementById('deleteCategoryModal');
-        deleteModal.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-        deleteCategoryId = null;
-        deleteCategoryCard = null;
-        
-        // Reset button state
-        const deleteBtn = document.getElementById('confirmDeleteCategory');
-        const deleteSpinner = document.getElementById('delete-loading-spinner');
-        const deleteText = document.getElementById('delete-button-text');
-        if (deleteBtn) {
-            deleteBtn.disabled = false;
-        }
-        if (deleteSpinner) {
-            deleteSpinner.classList.add('hidden');
-        }
-        if (deleteText) {
-            deleteText.textContent = 'Delete';
-        }
-    }
 
     function deleteCategory() {
         if (!deleteCategoryId) return;

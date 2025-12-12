@@ -31,9 +31,9 @@ return [
         'http://127.0.0.1:8080', // React dev server (alternative port)
         'http://127.0.0.1:8000', // Laravel server
         env('FRONTEND_URL', 'http://localhost:5173'),
-        // Add your production frontend URLs here
-        // 'https://yourdomain.com',
-        // 'https://www.yourdomain.com',
+        // Production frontend URLs
+        'https://yakinmode.tn',
+        'https://www.yakinmode.tn',
     ],
 
     'allowed_origins_patterns' => [

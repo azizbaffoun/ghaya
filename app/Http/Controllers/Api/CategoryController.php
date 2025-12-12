@@ -17,7 +17,17 @@ class CategoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Category::with(['children', 'products']);
+        $query = Category::with(['children' => function($q) {
+            $q->where('is_active', true);
+        }]);
+
+        // Filter by active status (default: only active)
+        if ($request->has('is_active')) {
+            $query->where('is_active', $request->boolean('is_active'));
+        } else {
+            // Default: only show active categories for public API
+            $query->where('is_active', true);
+        }
 
         // Filter by parent_id (null for root categories)
         if ($request->has('parent_id')) {
@@ -29,9 +39,14 @@ class CategoryController extends Controller
         }
 
         // Sort
-        $sortBy = $request->get('sort_by', 'name');
+        $sortBy = $request->get('sort_by', 'sort_order');
         $sortOrder = $request->get('sort_order', 'asc');
-        $query->orderBy($sortBy, $sortOrder);
+        
+        if ($sortBy === 'sort_order') {
+            $query->orderBy('sort_order')->orderBy('name');
+        } else {
+            $query->orderBy($sortBy, $sortOrder);
+        }
 
         // Get products count
         $query->withCount('products');
