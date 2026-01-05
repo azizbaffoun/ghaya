@@ -25,6 +25,9 @@ function openProductModal(productId = null) {
     document.body.classList.add('overflow-hidden');
 }
 
+// Make openProductModal globally available immediately
+window.openProductModal = openProductModal;
+
 // Load Product Data for Editing
 function loadProductData(productId) {
     fetch(`/admin/products/${productId}/edit`, {
@@ -226,11 +229,13 @@ function closeProductModal() {
     document.body.classList.remove('overflow-hidden');
     resetForm();
 }
+window.closeProductModal = closeProductModal;
 
 function openCategoryModal() {
     const categoryModal = document.getElementById('quickCategoryModal');
     categoryModal.classList.remove('hidden');
 }
+window.openCategoryModal = openCategoryModal;
 
 function closeCategoryModal() {
     const categoryModal = document.getElementById('quickCategoryModal');
@@ -238,6 +243,7 @@ function closeCategoryModal() {
     categoryModal.classList.add('hidden');
     quickCategoryForm.reset();
 }
+window.closeCategoryModal = closeCategoryModal;
 
 // Initialize when DOM is loaded
 console.log('Product modal JavaScript loaded!');
@@ -801,9 +807,3 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize sizes on page load
     updateSizes();
 });
-
-// Make functions globally available
-window.openProductModal = openProductModal;
-window.closeProductModal = closeProductModal;
-window.openCategoryModal = openCategoryModal;
-window.closeCategoryModal = closeCategoryModal;
