@@ -63,11 +63,26 @@ class ProductsController extends Controller
     {
         try {
             // Debug logging
+            $allFiles = $request->allFiles();
+            $fileDetails = [];
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $key => $file) {
+                    $fileDetails[$key] = [
+                        'name' => $file->getClientOriginalName(),
+                        'mime' => $file->getMimeType(),
+                        'size' => $file->getSize(),
+                        'is_valid' => $file->isValid(),
+                        'extension' => $file->getClientOriginalExtension(),
+                    ];
+                }
+            }
+            
             \Log::info('Product Store Request:', [
                 'has_images' => $request->hasFile('images'),
                 'images_count' => $request->hasFile('images') ? count($request->file('images')) : 0,
-                'all_files' => $request->allFiles(),
-                'request_data' => $request->except(['images'])
+                'file_details' => $fileDetails,
+                'all_files_keys' => array_keys($allFiles),
+                'request_data' => $request->except(['images', 'color_images'])
             ]);
 
             $request->validate([
@@ -83,12 +98,12 @@ class ProductsController extends Controller
                 'size_from' => 'required|integer|min:1|max:100',
                 'size_to' => 'required|integer|min:1|max:100|gte:size_from',
                 'images' => 'nullable|array',
-                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+                'images.*' => 'file|mimes:jpeg,jpg,png,gif,webp|max:10240',
                 'color_images' => 'nullable|array',
                 'color_images.*' => 'nullable|array',
-                'color_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240'
+                'color_images.*.*' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp|max:10240'
             ], [
-                'images.*.image' => 'Each file must be a valid image',
+                'images.*.file' => 'Each file must be a valid file',
                 'images.*.mimes' => 'Images must be jpeg, png, jpg, gif, or webp format',
                 'images.*.max' => 'Each image must be less than 10MB',
             ]);
@@ -195,12 +210,12 @@ class ProductsController extends Controller
                 'size_from' => 'required|integer|min:1|max:100',
                 'size_to' => 'required|integer|min:1|max:100|gte:size_from',
                 'images' => 'nullable|array',
-                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+                'images.*' => 'file|mimes:jpeg,jpg,png,gif,webp|max:10240',
                 'color_images' => 'nullable|array',
                 'color_images.*' => 'nullable|array',
-                'color_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240'
+                'color_images.*.*' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp|max:10240'
             ], [
-                'images.*.image' => 'Each file must be a valid image',
+                'images.*.file' => 'Each file must be a valid file',
                 'images.*.mimes' => 'Images must be jpeg, png, jpg, gif, or webp format',
                 'images.*.max' => 'Each image must be less than 10MB',
             ]);
