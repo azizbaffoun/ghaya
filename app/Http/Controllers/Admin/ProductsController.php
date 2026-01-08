@@ -102,7 +102,7 @@ class ProductsController extends Controller
                 'request_data' => $request->except(['images', 'color_images'])
             ]);
 
-            // Validate non-file fields first
+            // Validate non-file fields first (images handled separately)
             $request->validate([
                 'name' => 'required|string|max:255',
                 'sku' => 'required|string|unique:products,sku',
@@ -115,6 +115,8 @@ class ProductsController extends Controller
                 'colors' => 'nullable|array',
                 'size_from' => 'required|integer|min:1|max:100',
                 'size_to' => 'required|integer|min:1|max:100|gte:size_from',
+                'images' => 'sometimes|nullable',
+                'images.*' => 'sometimes|nullable',
             ]);
 
             // Manually validate image files if present
@@ -185,15 +187,23 @@ class ProductsController extends Controller
             ]);
 
         } catch (ValidationException $e) {
+            $errors = $e->errors();
             \Log::error('Validation error creating product:', [
-                'errors' => $e->errors(),
-                'request_data' => $request->except(['images', 'color_images'])
+                'errors' => $errors,
+                'all_errors' => json_encode($errors, JSON_PRETTY_PRINT),
+                'request_data' => $request->except(['images', 'color_images']),
+                'has_images' => $request->hasFile('images'),
+                'all_files' => array_keys($request->allFiles())
             ]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $errors,
+                'debug' => [
+                    'has_images' => $request->hasFile('images'),
+                    'all_files_keys' => array_keys($request->allFiles())
+                ]
             ], 422);
         } catch (\Exception $e) {
             \Log::error('Error creating product: ' . $e->getMessage(), [

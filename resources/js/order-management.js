@@ -38,7 +38,11 @@ function initializePrintFunctionality() {
     window.printSelected = function() {
         const selectedOrders = Alpine.store('selectedOrders') || [];
         if (selectedOrders.length === 0) {
-            alert('Please select orders first');
+            if (typeof showNotification !== 'undefined') {
+                showNotification('Please select orders first', 'warning');
+            } else {
+                alert('Please select orders first');
+            }
             return;
         }
         
@@ -66,13 +70,21 @@ function initializeStatusChecking() {
     
     window.checkOrderStatus = function(barcode, orderId) {
         if (!barcode) {
-            alert('No barcode available for this order');
+            if (typeof showNotification !== 'undefined') {
+                showNotification('No barcode available for this order', 'warning');
+            } else {
+                alert('No barcode available for this order');
+            }
             return;
         }
         
         const now = Date.now();
         if (now - lastStatusCheck < STATUS_CHECK_INTERVAL) {
-            alert('Please wait before checking another status (rate limited)');
+            if (typeof showNotification !== 'undefined') {
+                showNotification('Please wait before checking another status (rate limited)', 'warning');
+            } else {
+                alert('Please wait before checking another status (rate limited)');
+            }
             return;
         }
         lastStatusCheck = now;
@@ -108,12 +120,20 @@ function initializeStatusChecking() {
                     if (statusTextEl) statusTextEl.textContent = data.status.state;
                 }
             } else {
-                alert('Failed to check status: ' + (data.message || 'Unknown error'));
+                if (typeof showNotification !== 'undefined') {
+                    showNotification('Failed to check status: ' + (data.message || 'Unknown error'), 'error');
+                } else {
+                    alert('Failed to check status: ' + (data.message || 'Unknown error'));
+                }
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Failed to check status');
+            if (typeof showNotification !== 'undefined') {
+                showNotification('Failed to check status', 'error');
+            } else {
+                alert('Failed to check status');
+            }
         });
     };
 }

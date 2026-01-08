@@ -48,30 +48,61 @@ window.closeBannerModal = function() {
 
 window.editBanner = function(id) {
     // TODO: Implement edit functionality
-    alert('Edit banner functionality will be implemented');
+    if (typeof showNotification !== 'undefined') {
+        showNotification('Edit banner functionality will be implemented', 'info');
+    } else {
+        alert('Edit banner functionality will be implemented');
+    }
 }
 
 window.deleteBanner = function(id) {
-    if (confirm('Are you sure you want to delete this banner?')) {
-        fetch(`/admin/banners/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success) {
-                location.reload(); // Refresh to show updated state
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error deleting banner');
-        });
+    if (typeof showNotification !== 'undefined') {
+        // Use custom confirmation
+        if (confirm('Are you sure you want to delete this banner?')) {
+            fetch(`/admin/banners/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    showNotification('Banner deleted successfully', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification('Error: ' + (data.message || 'Failed to delete banner'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error deleting banner', 'error');
+            });
+        }
+    } else {
+        // Fallback to browser confirm
+        if (confirm('Are you sure you want to delete this banner?')) {
+            fetch(`/admin/banners/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting banner');
+            });
+        }
     }
 }
 
@@ -89,12 +120,20 @@ window.toggleBanner = function(id) {
         if(data.success) {
             location.reload(); // Refresh to show updated state
         } else {
-            alert('Error: ' + data.message);
+            if (typeof showNotification !== 'undefined') {
+                showNotification('Error: ' + (data.message || 'Failed to toggle banner'), 'error');
+            } else {
+                alert('Error: ' + data.message);
+            }
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error toggling banner');
+        if (typeof showNotification !== 'undefined') {
+            showNotification('Error toggling banner', 'error');
+        } else {
+            alert('Error toggling banner');
+        }
     });
 }
 
@@ -119,30 +158,61 @@ window.closeSectionModal = function() {
 
 window.editSection = function(id) {
     // TODO: Implement edit functionality
-    alert('Edit section functionality will be implemented');
+    if (typeof showNotification !== 'undefined') {
+        showNotification('Edit section functionality will be implemented', 'info');
+    } else {
+        alert('Edit section functionality will be implemented');
+    }
 }
 
 window.deleteSection = function(id) {
-    if (confirm('Are you sure you want to delete this section?')) {
-        fetch(`/admin/sections/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success) {
-                location.reload(); // Refresh to show updated state
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error deleting section');
-        });
+    if (typeof showNotification !== 'undefined') {
+        // Use custom confirmation
+        if (confirm('Are you sure you want to delete this section?')) {
+            fetch(`/admin/sections/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    showNotification('Section deleted successfully', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification('Error: ' + (data.message || 'Failed to delete section'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error deleting section', 'error');
+            });
+        }
+    } else {
+        // Fallback to browser confirm
+        if (confirm('Are you sure you want to delete this section?')) {
+            fetch(`/admin/sections/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting section');
+            });
+        }
     }
 }
 
@@ -160,12 +230,20 @@ window.toggleSection = function(id) {
         if(data.success) {
             location.reload(); // Refresh to show updated state
         } else {
-            alert('Error: ' + data.message);
+            if (typeof showNotification !== 'undefined') {
+                showNotification('Error: ' + (data.message || 'Failed to toggle section'), 'error');
+            } else {
+                alert('Error: ' + data.message);
+            }
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error toggling section');
+        if (typeof showNotification !== 'undefined') {
+            showNotification('Error toggling section', 'error');
+        } else {
+            alert('Error toggling section');
+        }
     });
 }
 
@@ -195,12 +273,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         closeBannerModal();
                         location.reload();
                     } else {
-                        alert('Error: ' + data.message);
+                        if (typeof showNotification !== 'undefined') {
+                            showNotification('Error: ' + (data.message || 'Failed to create banner'), 'error');
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error creating banner');
+                    if (typeof showNotification !== 'undefined') {
+                        showNotification('Error creating banner', 'error');
+                    } else {
+                        alert('Error creating banner');
+                    }
                 });
             });
         }
@@ -226,12 +312,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         closeSectionModal();
                         location.reload();
                     } else {
-                        alert('Error: ' + data.message);
+                        if (typeof showNotification !== 'undefined') {
+                            showNotification('Error: ' + (data.message || 'Failed to create section'), 'error');
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error creating section');
+                    if (typeof showNotification !== 'undefined') {
+                        showNotification('Error creating section', 'error');
+                    } else {
+                        alert('Error creating section');
+                    }
                 });
             });
         }

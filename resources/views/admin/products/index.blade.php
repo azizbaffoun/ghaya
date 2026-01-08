@@ -154,13 +154,9 @@
                                 <button onclick="openProductModal({{ $product->id }})" class="text-blue-600 hover:text-blue-900 transition-colors duration-200">
                                     {{ __('admin.common.edit') }}
                                 </button>
-                                <form method="POST" action="{{ route('admin.products.destroy', $product) }}" class="inline" onsubmit="return confirm('{{ __('admin.products.confirm_delete') }}')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900 transition-colors duration-200">
-                                        {{ __('admin.common.delete') }}
-                                    </button>
-                                </form>
+                                <button onclick="openDeleteProductModal({{ $product->id }}, '{{ addslashes($product->name) }}')" class="text-red-600 hover:text-red-900 transition-colors duration-200">
+                                    {{ __('admin.common.delete') }}
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -242,13 +238,9 @@
                             <button onclick="openProductModal({{ $product->id }})" class="flex-1 bg-blue-600 text-white text-center py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
                                 {{ __('admin.common.edit') }}
                             </button>
-                            <form method="POST" action="{{ route('admin.products.destroy', $product) }}" class="flex-1" onsubmit="return confirm('{{ __('admin.products.confirm_delete') }}')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="w-full bg-red-100 text-red-700 text-center py-2 px-3 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors">
-                                    {{ __('admin.common.delete') }}
-                                </button>
-                            </form>
+                            <button onclick="openDeleteProductModal({{ $product->id }}, '{{ addslashes($product->name) }}')" class="w-full bg-red-100 text-red-700 text-center py-2 px-3 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors">
+                                {{ __('admin.common.delete') }}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -288,6 +280,9 @@
     <!-- Include Product Modal -->
     @include('admin.products.partials.product-modal')
     </div>
+
+    <!-- Delete Product Modal -->
+    @include('admin.products.partials.delete-modal')
 @endsection
 
 @push('scripts')
