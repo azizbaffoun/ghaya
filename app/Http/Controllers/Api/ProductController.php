@@ -36,13 +36,14 @@ class ProductController extends Controller
             $query->where('is_active', $request->boolean('is_active'));
         }
 
-        // Search by name or description
+        // Search by name, description, SKU, or slug
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%");
+                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%");
             });
         }
 
@@ -73,15 +74,45 @@ class ProductController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        // Check if $id is numeric (ID) or a string (slug)
-        $product = is_numeric($id)
-            ? Product::with(['category', 'images', 'variants'])->findOrFail($id)
-            : Product::with(['category', 'images', 'variants'])->where('slug', $id)->firstOrFail();
+        try {
+            // Check if $id is numeric (ID) or a string (slug)
+            if (is_numeric($id)) {
+                $product = Product::with(['category', 'images', 'variants'])->findOrFail($id);
+            } else {
+                // Try to find by slug first
+                $product = Product::with(['category', 'images', 'variants'])
+                    ->where('slug', $id)
+                    ->first();
+                
+                // If not found by slug, try to find by slug-like name (for backwards compatibility)
+                if (!$product) {
+                    $slugFromName = str_replace('-', ' ', $id);
+                    $product = Product::with(['category', 'images', 'variants'])
+                        ->where(function($q) use ($id, $slugFromName) {
+                            $q->whereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [strtolower($id)])
+                              ->orWhere('name', 'like', "%{$slugFromName}%");
+                        })
+                        ->first();
+                }
+                
+                if (!$product) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Product not found'
+                    ], 404);
+                }
+            }
 
-        return response()->json([
-            'success' => true,
-            'data' => new ProductResource($product)
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => new ProductResource($product)
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found'
+            ], 404);
+        }
     }
 
     /**
