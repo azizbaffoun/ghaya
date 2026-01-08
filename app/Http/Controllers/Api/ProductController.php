@@ -8,6 +8,8 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -67,11 +69,14 @@ class ProductController extends Controller
 
     /**
      * Display the specified resource.
-     * GET /api/products/{id}
+     * GET /api/products/{id} or GET /api/products/{slug}
      */
     public function show(string $id): JsonResponse
     {
-        $product = Product::with(['category', 'images'])->findOrFail($id);
+        // Check if $id is numeric (ID) or a string (slug)
+        $product = is_numeric($id)
+            ? Product::with(['category', 'images', 'variants'])->findOrFail($id)
+            : Product::with(['category', 'images', 'variants'])->where('slug', $id)->firstOrFail();
 
         return response()->json([
             'success' => true,
@@ -213,9 +218,17 @@ class ProductController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
+            // Normalize boolean fields (accept "true"/"false" strings)
+            if ($request->has('is_active')) {
+                $request->merge(['is_active' => filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN)]);
+            }
+            if ($request->has('is_featured')) {
+                $request->merge(['is_featured' => filter_var($request->is_featured, FILTER_VALIDATE_BOOLEAN)]);
+            }
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'sku' => 'required|string|unique:products,sku',
+                'sku' => 'required|string|unique:products,sku|max:100',
                 'category_id' => 'required|exists:categories,id',
                 'description' => 'nullable|string',
                 'short_description' => 'nullable|string|max:500',
@@ -226,11 +239,39 @@ class ProductController extends Controller
                 'is_featured' => 'boolean',
                 'weight' => 'nullable|numeric|min:0',
                 'sizes' => 'nullable|array',
+                'sizes.*' => 'string|max:20',
                 'colors' => 'nullable|array',
+                'colors.*' => 'string|max:50',
                 'meta_title' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:500',
                 'meta_keywords' => 'nullable|string|max:500',
+            ], [
+                'name.required' => 'Product name is required',
+                'sku.required' => 'SKU is required',
+                'sku.unique' => 'This SKU is already in use. Please use a different SKU.',
+                'sku.max' => 'SKU cannot exceed 100 characters',
+                'category_id.required' => 'Category is required',
+                'category_id.exists' => 'Selected category does not exist',
+                'price.required' => 'Price is required',
+                'price.numeric' => 'Price must be a number',
+                'price.min' => 'Price must be greater than or equal to 0',
+                'stock_status.required' => 'Stock status is required',
+                'stock_status.in' => 'Stock status must be one of: in_stock, out_of_stock, pre_order',
+                'is_active.boolean' => 'is_active must be true or false',
+                'is_featured.boolean' => 'is_featured must be true or false',
             ]);
+
+            // Custom validation: compare_price must be greater than price if provided
+            if ($request->filled('compare_price') && $request->compare_price <= $request->price) {
+                throw ValidationException::withMessages([
+                    'compare_price' => ['Compare price must be greater than regular price']
+                ]);
+            }
+
+            // Generate slug if not provided
+            if (!isset($validated['slug'])) {
+                $validated['slug'] = Str::slug($validated['name']);
+            }
 
             $product = Product::create($validated);
 
@@ -240,6 +281,12 @@ class ProductController extends Controller
                 'data' => new ProductResource($product->load(['category', 'images', 'variants']))
             ], 201);
 
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
