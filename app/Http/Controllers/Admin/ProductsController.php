@@ -65,8 +65,24 @@ class ProductsController extends Controller
             // Debug logging
             $allFiles = $request->allFiles();
             $fileDetails = [];
+            $imageFiles = [];
+            
+            // Check for images in various formats
             if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $key => $file) {
+                $imageFiles = $request->file('images');
+            } elseif (isset($allFiles['images']) && is_array($allFiles['images'])) {
+                $imageFiles = $allFiles['images'];
+            } else {
+                // Check for images[0], images[1], etc.
+                foreach ($allFiles as $key => $file) {
+                    if (preg_match('/^images\[(\d+)\]$/', $key, $matches)) {
+                        $imageFiles[$matches[1]] = $file;
+                    }
+                }
+            }
+            
+            foreach ($imageFiles as $key => $file) {
+                if ($file && $file->isValid()) {
                     $fileDetails[$key] = [
                         'name' => $file->getClientOriginalName(),
                         'mime' => $file->getMimeType(),
@@ -79,7 +95,7 @@ class ProductsController extends Controller
             
             \Log::info('Product Store Request:', [
                 'has_images' => $request->hasFile('images'),
-                'images_count' => $request->hasFile('images') ? count($request->file('images')) : 0,
+                'images_count' => count($imageFiles),
                 'file_details' => $fileDetails,
                 'all_files_keys' => array_keys($allFiles),
                 'raw_input' => array_keys($request->all()),
@@ -102,12 +118,12 @@ class ProductsController extends Controller
             ]);
 
             // Manually validate image files if present
-            if ($request->hasFile('images')) {
+            if (!empty($imageFiles)) {
                 $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
                 $maxSize = 10240; // 10MB in KB
                 
-                foreach ($request->file('images') as $key => $file) {
-                    if (!$file->isValid()) {
+                foreach ($imageFiles as $key => $file) {
+                    if (!$file || !$file->isValid()) {
                         throw ValidationException::withMessages([
                             "images.{$key}" => ['The uploaded file is not valid.']
                         ]);
@@ -144,8 +160,10 @@ class ProductsController extends Controller
             ]);
 
             // Handle general image uploads
-            if ($request->hasFile('images')) {
-                $this->uploadProductImages($product, $request->file('images'), null);
+            if (!empty($imageFiles)) {
+                // Sort by key to maintain order
+                ksort($imageFiles);
+                $this->uploadProductImages($product, array_values($imageFiles), null);
             }
 
             // Handle color-specific image uploads
