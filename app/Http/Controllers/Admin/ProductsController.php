@@ -8,6 +8,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ProductsController extends Controller
 {
@@ -81,10 +82,15 @@ class ProductsController extends Controller
                 'colors' => 'nullable|array',
                 'size_from' => 'required|integer|min:1|max:100',
                 'size_to' => 'required|integer|min:1|max:100|gte:size_from',
-                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'images' => 'nullable|array',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
                 'color_images' => 'nullable|array',
                 'color_images.*' => 'nullable|array',
-                'color_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240'
+                'color_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240'
+            ], [
+                'images.*.image' => 'Each file must be a valid image',
+                'images.*.mimes' => 'Images must be jpeg, png, jpg, gif, or webp format',
+                'images.*.max' => 'Each image must be less than 10MB',
             ]);
 
             // Create product
@@ -125,6 +131,17 @@ class ProductsController extends Controller
                 'product' => $product
             ]);
 
+        } catch (ValidationException $e) {
+            \Log::error('Validation error creating product:', [
+                'errors' => $e->errors(),
+                'request_data' => $request->except(['images', 'color_images'])
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             \Log::error('Error creating product: ' . $e->getMessage(), [
                 'exception' => $e,
@@ -177,10 +194,15 @@ class ProductsController extends Controller
                 'colors' => 'nullable|array',
                 'size_from' => 'required|integer|min:1|max:100',
                 'size_to' => 'required|integer|min:1|max:100|gte:size_from',
-                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'images' => 'nullable|array',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
                 'color_images' => 'nullable|array',
                 'color_images.*' => 'nullable|array',
-                'color_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240'
+                'color_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240'
+            ], [
+                'images.*.image' => 'Each file must be a valid image',
+                'images.*.mimes' => 'Images must be jpeg, png, jpg, gif, or webp format',
+                'images.*.max' => 'Each image must be less than 10MB',
             ]);
 
             // Update product
