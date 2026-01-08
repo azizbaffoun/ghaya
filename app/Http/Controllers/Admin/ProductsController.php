@@ -82,9 +82,11 @@ class ProductsController extends Controller
                 'images_count' => $request->hasFile('images') ? count($request->file('images')) : 0,
                 'file_details' => $fileDetails,
                 'all_files_keys' => array_keys($allFiles),
+                'raw_input' => array_keys($request->all()),
                 'request_data' => $request->except(['images', 'color_images'])
             ]);
 
+            // Validate non-file fields first
             $request->validate([
                 'name' => 'required|string|max:255',
                 'sku' => 'required|string|unique:products,sku',
@@ -97,16 +99,34 @@ class ProductsController extends Controller
                 'colors' => 'nullable|array',
                 'size_from' => 'required|integer|min:1|max:100',
                 'size_to' => 'required|integer|min:1|max:100|gte:size_from',
-                'images' => 'nullable|array',
-                'images.*' => 'file|mimes:jpeg,jpg,png,gif,webp|max:10240',
-                'color_images' => 'nullable|array',
-                'color_images.*' => 'nullable|array',
-                'color_images.*.*' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp|max:10240'
-            ], [
-                'images.*.file' => 'Each file must be a valid file',
-                'images.*.mimes' => 'Images must be jpeg, png, jpg, gif, or webp format',
-                'images.*.max' => 'Each image must be less than 10MB',
             ]);
+
+            // Manually validate image files if present
+            if ($request->hasFile('images')) {
+                $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                $maxSize = 10240; // 10MB in KB
+                
+                foreach ($request->file('images') as $key => $file) {
+                    if (!$file->isValid()) {
+                        throw ValidationException::withMessages([
+                            "images.{$key}" => ['The uploaded file is not valid.']
+                        ]);
+                    }
+                    
+                    $mimeType = $file->getMimeType();
+                    if (!in_array($mimeType, $allowedMimes)) {
+                        throw ValidationException::withMessages([
+                            "images.{$key}" => ['The file must be a jpeg, png, jpg, gif, or webp image.']
+                        ]);
+                    }
+                    
+                    if ($file->getSize() > ($maxSize * 1024)) {
+                        throw ValidationException::withMessages([
+                            "images.{$key}" => ['The file must be less than 10MB.']
+                        ]);
+                    }
+                }
+            }
 
             // Create product
             $product = Product::create([
