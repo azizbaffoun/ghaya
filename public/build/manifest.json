@@ -1,0 +1,43 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-DsiyAGog.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-BId3Cv0G.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/category-modal.js": {
+    "file": "assets/category-modal-B-_9Xycb.js",
+    "name": "category-modal",
+    "src": "resources/js/category-modal.js",
+    "isEntry": true
+  },
+  "resources/js/live-search.js": {
+    "file": "assets/live-search-BjFlhRSQ.js",
+    "name": "live-search",
+    "src": "resources/js/live-search.js",
+    "isEntry": true
+  },
+  "resources/js/order-management.js": {
+    "file": "assets/order-management-Dq6vhS5G.js",
+    "name": "order-management",
+    "src": "resources/js/order-management.js",
+    "isEntry": true
+  },
+  "resources/js/product-modal.js": {
+    "file": "assets/product-modal-Ccy3V6SU.js",
+    "name": "product-modal",
+    "src": "resources/js/product-modal.js",
+    "isEntry": true
+  },
+  "resources/js/website-management.js": {
+    "file": "assets/website-management-B2OceDMD.js",
+    "name": "website-management",
+    "src": "resources/js/website-management.js",
+    "isEntry": true
+  }
+}
