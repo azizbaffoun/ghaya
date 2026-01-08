@@ -37,19 +37,26 @@ function resetForm() {
     }
     
     // Update sizes if the function is available (increments by 2)
+    console.log('[resetForm] Updating sizes in resetForm');
     const sizeFrom = document.getElementById('size_from');
     const sizeTo = document.getElementById('size_to');
     const sizesDisplay = document.getElementById('sizes_display');
     if (sizeFrom && sizeTo && sizesDisplay) {
         const from = parseInt(sizeFrom.value) || 36;
         const to = parseInt(sizeTo.value) || 42;
+        console.log('[resetForm] Size range:', from, 'to', to, 'increment: 2');
         sizesDisplay.innerHTML = '';
+        const generatedSizes = [];
         for (let i = from; i <= to; i += 2) {
+            generatedSizes.push(i);
             const sizeChip = document.createElement('span');
             sizeChip.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800';
             sizeChip.textContent = i;
             sizesDisplay.appendChild(sizeChip);
         }
+        console.log('[resetForm] Generated sizes:', generatedSizes);
+    } else {
+        console.log('[resetForm] Size elements not found:', { sizeFrom, sizeTo, sizesDisplay });
     }
 }
 
@@ -58,16 +65,19 @@ window.resetForm = resetForm;
 
 // Modal Controls
 function openProductModal(productId = null) {
+    console.log('[openProductModal] Called with productId:', productId);
     isEditMode = productId !== null;
     currentProductId = productId;
     
     if (isEditMode) {
+        console.log('[openProductModal] Edit mode - loading product data');
         loadProductData(productId);
         const modalTitleText = document.getElementById('modal-title-text');
         const saveText = document.getElementById('save_text');
         if (modalTitleText) modalTitleText.textContent = 'Edit Product';
         if (saveText) saveText.textContent = 'Update Product';
     } else {
+        console.log('[openProductModal] Add mode - resetting form');
         resetForm();
         const modalTitleText = document.getElementById('modal-title-text');
         const saveText = document.getElementById('save_text');
@@ -80,7 +90,11 @@ function openProductModal(productId = null) {
         productModal.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
         // Update sizes display when modal opens
-        setTimeout(() => updateSizes(), 100);
+        console.log('[openProductModal] Scheduling updateSizes in 100ms');
+        setTimeout(() => {
+            console.log('[openProductModal] Calling updateSizes from timeout');
+            updateSizes();
+        }, 100);
     }
 }
 
@@ -187,20 +201,31 @@ function renderColors() {
 
 // Update Sizes Function (increments by 2)
 function updateSizes() {
+    console.log('[updateSizes GLOBAL] Function called - Stack trace:', new Error().stack);
     const from = parseInt(document.getElementById('size_from').value) || 36;
     const to = parseInt(document.getElementById('size_to').value) || 42;
     const sizesDisplay = document.getElementById('sizes_display');
     
-    if (!sizesDisplay) return;
+    console.log('[updateSizes GLOBAL] Size range:', from, 'to', to, 'increment: 2');
+    
+    if (!sizesDisplay) {
+        console.log('[updateSizes GLOBAL] sizesDisplay element not found!');
+        return;
+    }
     
     sizesDisplay.innerHTML = '';
+    const generatedSizes = [];
     
     for (let i = from; i <= to; i += 2) {
+        generatedSizes.push(i);
         const sizeChip = document.createElement('span');
         sizeChip.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800';
         sizeChip.textContent = i;
         sizesDisplay.appendChild(sizeChip);
     }
+    
+    console.log('[updateSizes GLOBAL] Generated sizes:', generatedSizes);
+    console.log('[updateSizes GLOBAL] Actual HTML content:', sizesDisplay.innerHTML.substring(0, 200));
 }
 
 // Render Color Images Preview Function
@@ -482,28 +507,53 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Size Range Management (increments by 2)
     function updateSizes() {
+        console.log('[updateSizes LOCAL] Function called from DOMContentLoaded');
         const from = parseInt(document.getElementById('size_from').value) || 36;
         const to = parseInt(document.getElementById('size_to').value) || 42;
         const sizesDisplay = document.getElementById('sizes_display');
         
+        console.log('[updateSizes LOCAL] Size range:', from, 'to', to, 'increment: 2');
+        
+        if (!sizesDisplay) {
+            console.log('[updateSizes LOCAL] sizesDisplay element not found!');
+            return;
+        }
+        
         sizesDisplay.innerHTML = '';
+        const generatedSizes = [];
         
         for (let i = from; i <= to; i += 2) {
+            generatedSizes.push(i);
             const sizeChip = document.createElement('span');
             sizeChip.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800';
             sizeChip.textContent = i;
             sizesDisplay.appendChild(sizeChip);
         }
+        
+        console.log('[updateSizes LOCAL] Generated sizes:', generatedSizes);
+        console.log('[updateSizes LOCAL] Actual HTML content:', sizesDisplay.innerHTML.substring(0, 200));
     }
 
     const sizeFrom = document.getElementById('size_from');
     if (sizeFrom) {
-        sizeFrom.addEventListener('input', updateSizes);
+        console.log('[DOMContentLoaded] Adding input listener to size_from');
+        sizeFrom.addEventListener('input', function() {
+            console.log('[size_from input] Event triggered, calling updateSizes');
+            updateSizes();
+        });
+    } else {
+        console.log('[DOMContentLoaded] size_from element not found!');
     }
     
     const sizeTo = document.getElementById('size_to');
     if (sizeTo) {
-        sizeTo.addEventListener('input', updateSizes);
+        console.log('[DOMContentLoaded] Adding input listener to size_to');
+        sizeTo.addEventListener('input', function() {
+            console.log('[size_to input] Event triggered, calling updateSizes');
+            updateSizes();
+        });
+    } else {
+        console.log('[DOMContentLoaded] size_to element not found!');
     }
 
     // Image Preview
@@ -849,5 +899,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Initialize sizes on page load
+    console.log('[DOMContentLoaded] Initializing sizes on page load');
     updateSizes();
 });
