@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Str;
 
 class ProductsController extends Controller
 {
@@ -89,7 +90,7 @@ class ProductsController extends Controller
             // Create product
             $product = Product::create([
                 'name' => $request->name,
-                'slug' => \Str::slug($request->name),
+                'slug' => Str::slug($request->name),
                 'sku' => $request->sku,
                 'category_id' => $request->category_id,
                 'description' => $request->description ?: 'No description provided',
@@ -185,7 +186,7 @@ class ProductsController extends Controller
             // Update product
             $product->update([
                 'name' => $request->name,
-                'slug' => \Str::slug($request->name),
+                'slug' => Str::slug($request->name),
                 'sku' => $request->sku,
                 'category_id' => $request->category_id,
                 'description' => $request->description ?: 'No description provided',
@@ -256,12 +257,12 @@ class ProductsController extends Controller
     }
 
     /**
-     * Generate size array from range
+     * Generate size array from range (increments by 2)
      */
     private function generateSizes($from, $to)
     {
         $sizes = [];
-        for ($i = $from; $i <= $to; $i++) {
+        for ($i = $from; $i <= $to; $i += 2) {
             $sizes[] = (string)$i;
         }
         return $sizes;

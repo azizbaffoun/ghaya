@@ -140,6 +140,22 @@ class Banner extends Model
     }
 
     /**
+     * Get the banner's video in current locale
+     */
+    public function getVideoAttribute(): ?string
+    {
+        return $this->getTranslatedAttribute('video');
+    }
+
+    /**
+     * Get the banner's video URL in current locale
+     */
+    public function getVideoUrlAttribute(): ?string
+    {
+        return $this->getTranslatedAttribute('video_url');
+    }
+
+    /**
      * Check if banner is currently active
      */
     public function isCurrentlyActive(): bool

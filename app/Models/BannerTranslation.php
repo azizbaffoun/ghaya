@@ -20,6 +20,8 @@ class BannerTranslation extends Model
         'button_url',
         'image',
         'mobile_image',
+        'video',
+        'video_url',
         'additional_images',
     ];
 

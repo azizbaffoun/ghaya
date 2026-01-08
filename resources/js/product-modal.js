@@ -5,6 +5,57 @@ let colorImages = {}; // New: Store images for each color
 let isEditMode = false;
 let currentProductId = null;
 
+// Reset Form - Define as global function that's safe to call
+function resetForm() {
+    const productForm = document.getElementById('productForm');
+    if (productForm) {
+        productForm.reset();
+    }
+    selectedColors = [];
+    selectedImages = [];
+    colorImages = {};
+    
+    const colorsList = document.getElementById('colors_list');
+    if (colorsList) {
+        colorsList.innerHTML = '';
+    }
+    
+    const imagePreview = document.getElementById('image_preview');
+    if (imagePreview) {
+        imagePreview.classList.add('hidden');
+        imagePreview.innerHTML = '';
+    }
+    
+    const discountField = document.getElementById('discount_field');
+    if (discountField) {
+        discountField.classList.add('hidden');
+    }
+    
+    const productId = document.getElementById('product_id');
+    if (productId) {
+        productId.value = '';
+    }
+    
+    // Update sizes if the function is available (increments by 2)
+    const sizeFrom = document.getElementById('size_from');
+    const sizeTo = document.getElementById('size_to');
+    const sizesDisplay = document.getElementById('sizes_display');
+    if (sizeFrom && sizeTo && sizesDisplay) {
+        const from = parseInt(sizeFrom.value) || 36;
+        const to = parseInt(sizeTo.value) || 42;
+        sizesDisplay.innerHTML = '';
+        for (let i = from; i <= to; i += 2) {
+            const sizeChip = document.createElement('span');
+            sizeChip.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800';
+            sizeChip.textContent = i;
+            sizesDisplay.appendChild(sizeChip);
+        }
+    }
+}
+
+// Make resetForm globally available immediately
+window.resetForm = resetForm;
+
 // Modal Controls
 function openProductModal(productId = null) {
     isEditMode = productId !== null;
@@ -12,17 +63,25 @@ function openProductModal(productId = null) {
     
     if (isEditMode) {
         loadProductData(productId);
-        document.getElementById('modal-title-text').textContent = 'Edit Product';
-        document.getElementById('save_text').textContent = 'Update Product';
+        const modalTitleText = document.getElementById('modal-title-text');
+        const saveText = document.getElementById('save_text');
+        if (modalTitleText) modalTitleText.textContent = 'Edit Product';
+        if (saveText) saveText.textContent = 'Update Product';
     } else {
         resetForm();
-        document.getElementById('modal-title-text').textContent = 'Add Product';
-        document.getElementById('save_text').textContent = 'Save Product';
+        const modalTitleText = document.getElementById('modal-title-text');
+        const saveText = document.getElementById('save_text');
+        if (modalTitleText) modalTitleText.textContent = 'Add Product';
+        if (saveText) saveText.textContent = 'Save Product';
     }
     
     const productModal = document.getElementById('productModal');
-    productModal.classList.remove('hidden');
-    document.body.classList.add('overflow-hidden');
+    if (productModal) {
+        productModal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        // Update sizes display when modal opens
+        setTimeout(() => updateSizes(), 100);
+    }
 }
 
 // Make openProductModal globally available immediately
@@ -126,7 +185,7 @@ function renderColors() {
     });
 }
 
-// Update Sizes Function
+// Update Sizes Function (increments by 2)
 function updateSizes() {
     const from = parseInt(document.getElementById('size_from').value) || 36;
     const to = parseInt(document.getElementById('size_to').value) || 42;
@@ -136,7 +195,7 @@ function updateSizes() {
     
     sizesDisplay.innerHTML = '';
     
-    for (let i = from; i <= to; i++) {
+    for (let i = from; i <= to; i += 2) {
         const sizeChip = document.createElement('span');
         sizeChip.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800';
         sizeChip.textContent = i;
@@ -225,7 +284,9 @@ function showNotification(message, type = 'info') {
 
 function closeProductModal() {
     const productModal = document.getElementById('productModal');
-    productModal.classList.add('hidden');
+    if (productModal) {
+        productModal.classList.add('hidden');
+    }
     document.body.classList.remove('overflow-hidden');
     resetForm();
 }
@@ -419,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Size Range Management
+    // Size Range Management (increments by 2)
     function updateSizes() {
         const from = parseInt(document.getElementById('size_from').value) || 36;
         const to = parseInt(document.getElementById('size_to').value) || 42;
@@ -427,7 +488,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         sizesDisplay.innerHTML = '';
         
-        for (let i = from; i <= to; i++) {
+        for (let i = from; i <= to; i += 2) {
             const sizeChip = document.createElement('span');
             sizeChip.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800';
             sizeChip.textContent = i;
@@ -530,120 +591,136 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Form Submission
-    productForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData();
-        const submitBtn = document.getElementById('saveProduct');
-        const loadingSpinner = document.getElementById('loading_spinner');
-        const saveText = document.getElementById('save_text');
-        
-        // Show loading state
-        submitBtn.disabled = true;
-        loadingSpinner.classList.remove('hidden');
-        saveText.textContent = isEditMode ? 'Updating...' : 'Saving...';
-        
-        // Add form data
-        const csrfToken = document.querySelector('meta[name="csrf-token"]');
-        console.log('CSRF Token element:', csrfToken);
-        if (csrfToken) {
-            console.log('CSRF Token value:', csrfToken.getAttribute('content'));
-            formData.append('_token', csrfToken.getAttribute('content'));
-        } else {
-            console.error('CSRF token not found!');
-        }
-        formData.append('name', document.getElementById('name').value);
-        formData.append('sku', document.getElementById('sku').value);
-        formData.append('category_id', document.getElementById('category_id').value);
-        formData.append('description', document.getElementById('description').value);
-        formData.append('price', document.getElementById('price').value);
-        formData.append('compare_price', document.getElementById('compare_price').value);
-        formData.append('stock_status', document.getElementById('stock_status').value);
-        formData.append('is_active', document.getElementById('is_active').checked ? '1' : '0');
-        formData.append('has_discount', document.getElementById('has_discount').checked ? '1' : '0');
-        // Add colors as individual array elements
-        selectedColors.forEach((color, index) => {
-            formData.append(`colors[${index}]`, color);
-        });
-        formData.append('size_from', document.getElementById('size_from').value);
-        formData.append('size_to', document.getElementById('size_to').value);
-        
-        // Add color-specific images
-        Object.keys(colorImages).forEach(color => {
-            if (colorImages[color] && colorImages[color].length > 0) {
-                colorImages[color].forEach((file, index) => {
-                    formData.append(`color_images[${color}][${index}]`, file);
-                });
-            }
-        });
-        
-        // Add general images (if any)
-        console.log('Selected images:', selectedImages);
-        selectedImages.forEach((file, index) => {
-            console.log(`Adding image ${index}:`, file.name, file.type, file.size);
-            formData.append(`images[${index}]`, file);
-        });
-        
-        if (isEditMode) {
-            formData.append('_method', 'PUT');
-        }
-        
-        const url = isEditMode ? `/admin/products/${currentProductId}` : '/admin/products';
-        
-        console.log('Submitting form to:', url);
-        console.log('FormData contents:');
-        for (let [key, value] of formData.entries()) {
-            console.log(key, value);
-        }
-
-        fetch(url, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers);
+    if (productForm) {
+        productForm.addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            const formData = new FormData();
+            const submitBtn = document.getElementById('saveProduct');
+            const loadingSpinner = document.getElementById('loading_spinner');
+            const saveText = document.getElementById('save_text');
+            
+            // Show loading state
+            if (submitBtn) submitBtn.disabled = true;
+            if (loadingSpinner) loadingSpinner.classList.remove('hidden');
+            if (saveText) saveText.textContent = isEditMode ? 'Updating...' : 'Saving...';
+        
+            // Add form data
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            console.log('CSRF Token element:', csrfToken);
+            if (csrfToken) {
+                console.log('CSRF Token value:', csrfToken.getAttribute('content'));
+                formData.append('_token', csrfToken.getAttribute('content'));
+            } else {
+                console.error('CSRF token not found!');
             }
             
-            return response.text().then(text => {
-                console.log('Raw response:', text);
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    console.error('Failed to parse JSON:', e);
-                    throw new Error('Invalid JSON response');
+            const nameEl = document.getElementById('name');
+            const skuEl = document.getElementById('sku');
+            const categoryIdEl = document.getElementById('category_id');
+            const descriptionEl = document.getElementById('description');
+            const priceEl = document.getElementById('price');
+            const comparePriceEl = document.getElementById('compare_price');
+            const stockStatusEl = document.getElementById('stock_status');
+            const isActiveEl = document.getElementById('is_active');
+            const hasDiscountEl = document.getElementById('has_discount');
+            const sizeFromEl = document.getElementById('size_from');
+            const sizeToEl = document.getElementById('size_to');
+            
+            if (nameEl) formData.append('name', nameEl.value);
+            if (skuEl) formData.append('sku', skuEl.value);
+            if (categoryIdEl) formData.append('category_id', categoryIdEl.value);
+            if (descriptionEl) formData.append('description', descriptionEl.value);
+            if (priceEl) formData.append('price', priceEl.value);
+            if (comparePriceEl) formData.append('compare_price', comparePriceEl.value);
+            if (stockStatusEl) formData.append('stock_status', stockStatusEl.value);
+            if (isActiveEl) formData.append('is_active', isActiveEl.checked ? '1' : '0');
+            if (hasDiscountEl) formData.append('has_discount', hasDiscountEl.checked ? '1' : '0');
+            
+            // Add colors as individual array elements
+            selectedColors.forEach((color, index) => {
+                formData.append(`colors[${index}]`, color);
+            });
+            if (sizeFromEl) formData.append('size_from', sizeFromEl.value);
+            if (sizeToEl) formData.append('size_to', sizeToEl.value);
+            
+            // Add color-specific images
+            Object.keys(colorImages).forEach(color => {
+                if (colorImages[color] && colorImages[color].length > 0) {
+                    colorImages[color].forEach((file, index) => {
+                        formData.append(`color_images[${color}][${index}]`, file);
+                    });
                 }
             });
-        })
-        .then(data => {
-            console.log('Parsed response:', data);
-            if (data.success) {
-                // Show success message
-                showNotification('Product saved successfully!', 'success');
-                closeProductModal();
-                // Reload page to show the new/updated product
-                window.location.reload();
-            } else {
-                showNotification(data.message || 'Error saving product', 'error');
+            
+            // Add general images (if any)
+            console.log('Selected images:', selectedImages);
+            selectedImages.forEach((file, index) => {
+                console.log(`Adding image ${index}:`, file.name, file.type, file.size);
+                formData.append(`images[${index}]`, file);
+            });
+            
+            if (isEditMode) {
+                formData.append('_method', 'PUT');
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Error saving product: ' + error.message, 'error');
-        })
-        .finally(() => {
-            // Reset loading state
-            submitBtn.disabled = false;
-            loadingSpinner.classList.add('hidden');
-            saveText.textContent = isEditMode ? 'Update Product' : 'Save Product';
+            
+            const url = isEditMode ? `/admin/products/${currentProductId}` : '/admin/products';
+            
+            console.log('Submitting form to:', url);
+            console.log('FormData contents:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return response.text().then(text => {
+                    console.log('Raw response:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('Failed to parse JSON:', e);
+                        throw new Error('Invalid JSON response');
+                    }
+                });
+            })
+            .then(data => {
+                console.log('Parsed response:', data);
+                if (data.success) {
+                    // Show success message
+                    showNotification('Product saved successfully!', 'success');
+                    closeProductModal();
+                    // Reload page to show the new/updated product
+                    window.location.reload();
+                } else {
+                    showNotification(data.message || 'Error saving product', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error saving product: ' + error.message, 'error');
+            })
+            .finally(() => {
+                // Reset loading state
+                if (submitBtn) submitBtn.disabled = false;
+                if (loadingSpinner) loadingSpinner.classList.add('hidden');
+                if (saveText) saveText.textContent = isEditMode ? 'Update Product' : 'Save Product';
+            });
         });
-    });
+    }
 
     // Quick Category Creation
     const saveQuickCategory = document.getElementById('saveQuickCategory');
@@ -730,40 +807,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-    // Reset Form
-    function resetForm() {
-        if (productForm) {
-            productForm.reset();
-        }
-        selectedColors = [];
-        selectedImages = [];
-        colorImages = {}; // Reset color images
-        
-        const colorsList = document.getElementById('colors_list');
-        if (colorsList) {
-            colorsList.innerHTML = '';
-        }
-        
-        const imagePreview = document.getElementById('image_preview');
-        if (imagePreview) {
-            imagePreview.classList.add('hidden');
-        }
-        
-        const discountField = document.getElementById('discount_field');
-        if (discountField) {
-            discountField.classList.add('hidden');
-        }
-        
-        const productId = document.getElementById('product_id');
-        if (productId) {
-            productId.value = '';
-        }
-        
-        updateSizes();
-    }
-
-    // Make resetForm globally accessible
-    window.resetForm = resetForm;
+    // Note: resetForm is already defined globally at the top of the file
 
     // Notification System
     function showNotification(message, type = 'info') {

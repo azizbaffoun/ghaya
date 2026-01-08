@@ -321,6 +321,8 @@ class BannerController extends Controller
             'title' => $translation?->title,
             'subtitle' => $translation?->subtitle,
             'image' => $translation?->image ? asset('storage/' . $translation->image) : null,
+            'video' => $translation?->video ? asset('storage/' . $translation->video) : null,
+            'video_url' => $translation?->video_url,
             'cta_text' => $translation?->button_text,
             'cta_link' => $translation?->button_url,
             'type' => $banner->type,

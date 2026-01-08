@@ -46,6 +46,8 @@ class BannerController extends Controller
                 'subtitle' => 'nullable|string|max:255',
                 'type' => 'required|string|in:hero,promotional,category',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'video' => 'nullable|mimes:mp4,mov,avi,wmv|max:10240', // Max 10MB for video
+                'video_url' => 'nullable|url|max:500', // For external video URLs
                 'cta_text' => 'nullable|string|max:255',
                 'cta_link' => 'nullable|url|max:255',
                 'is_active' => 'boolean'
@@ -67,6 +69,12 @@ class BannerController extends Controller
                 $imagePath = $request->file('image')->store('banners', 'public');
             }
 
+            // Handle video upload
+            $videoPath = null;
+            if ($request->hasFile('video')) {
+                $videoPath = $request->file('video')->store('banners/videos', 'public');
+            }
+
             // Create default translation
             $french = Language::where('code', 'fr')->first();
             if ($french) {
@@ -77,7 +85,9 @@ class BannerController extends Controller
                     'subtitle' => $request->subtitle,
                     'button_text' => $request->cta_text,
                     'button_url' => $request->cta_link,
-                    'image' => $imagePath
+                    'image' => $imagePath,
+                    'video' => $videoPath,
+                    'video_url' => $request->video_url
                 ]);
             }
 
@@ -108,6 +118,8 @@ class BannerController extends Controller
                 'cta_text' => 'nullable|string|max:255',
                 'cta_link' => 'nullable|url|max:255',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'video' => 'nullable|mimes:mp4,mov,avi,wmv|max:10240',
+                'video_url' => 'nullable|url|max:500',
                 'is_active' => 'sometimes|boolean'
             ]);
 
@@ -125,6 +137,16 @@ class BannerController extends Controller
                 $imagePath = $request->file('image')->store('banners', 'public');
             }
 
+            // Handle video upload
+            $videoPath = null;
+            if ($request->hasFile('video')) {
+                // Delete old video
+                if ($banner->getTranslation('video')) {
+                    Storage::disk('public')->delete($banner->getTranslation('video'));
+                }
+                $videoPath = $request->file('video')->store('banners/videos', 'public');
+            }
+
             // Update translation
             $french = Language::where('code', 'fr')->first();
             if ($french) {
@@ -139,6 +161,14 @@ class BannerController extends Controller
 
                 if ($imagePath) {
                     $translationData['image'] = $imagePath;
+                }
+
+                if ($videoPath) {
+                    $translationData['video'] = $videoPath;
+                }
+
+                if ($request->has('video_url')) {
+                    $translationData['video_url'] = $request->video_url;
                 }
 
                 BannerTranslation::updateOrCreate(
@@ -174,6 +204,11 @@ class BannerController extends Controller
             // Delete associated image
             if ($banner->getTranslation('image')) {
                 Storage::disk('public')->delete($banner->getTranslation('image'));
+            }
+            
+            // Delete associated video
+            if ($banner->getTranslation('video')) {
+                Storage::disk('public')->delete($banner->getTranslation('video'));
             }
             
             $banner->delete();

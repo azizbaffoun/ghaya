@@ -40,6 +40,8 @@ class BannerResource extends JsonResource
                 'button_url' => $currentTranslation->button_url,
                 'image' => $currentTranslation->image ? asset('storage/' . $currentTranslation->image) : null,
                 'mobile_image' => $currentTranslation->mobile_image ? asset('storage/' . $currentTranslation->mobile_image) : null,
+                'video' => $currentTranslation->video ? asset('storage/' . $currentTranslation->video) : null,
+                'video_url' => $currentTranslation->video_url,
             ] : null,
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
