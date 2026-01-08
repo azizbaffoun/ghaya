@@ -160,7 +160,7 @@
                             <h4 class="text-md font-medium text-gray-900 mb-4">Colors</h4>
                             <div class="space-y-4">
                                 <div class="flex items-center space-x-2">
-                                    <input type="color" id="color_picker" class="h-10 w-10 border border-gray-300 rounded cursor-pointer">
+                                    <input type="color" id="color_picker" value="#FFFFFF" class="h-10 w-10 border border-gray-300 rounded cursor-pointer">
                                     <button type="button" id="add_color" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                         Add Color
                                     </button>

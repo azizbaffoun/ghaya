@@ -486,11 +486,33 @@ document.addEventListener('DOMContentLoaded', function() {
         addColor.addEventListener('click', function() {
             const colorPicker = document.getElementById('color_picker');
             if (colorPicker) {
-                const color = colorPicker.value;
+                // Get the current value from the color picker
+                let color = colorPicker.value;
                 
+                console.log('Color picker value before processing:', color);
+                
+                // Ensure color is in uppercase format (#RRGGBB)
+                if (color && color.startsWith('#')) {
+                    color = color.toUpperCase();
+                } else if (color) {
+                    color = '#' + color.toUpperCase();
+                }
+                
+                console.log('Processed color:', color);
+                console.log('Current selectedColors:', selectedColors);
+                
+                // Only add if color is valid and not already in the list
                 if (color && !selectedColors.includes(color)) {
                     selectedColors.push(color);
+                    console.log('Added color to selectedColors:', color);
+                    console.log('Updated selectedColors:', selectedColors);
                     renderColors();
+                    // Reset color picker to white after adding (not black)
+                    colorPicker.value = '#FFFFFF';
+                } else if (selectedColors.includes(color)) {
+                    alert('This color has already been added.');
+                } else {
+                    console.error('Invalid color value:', color);
                 }
             }
         });

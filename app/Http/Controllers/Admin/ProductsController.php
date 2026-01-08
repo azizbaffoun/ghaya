@@ -146,6 +146,29 @@ class ProductsController extends Controller
                 }
             }
 
+            // Handle colors - only save if provided and not empty
+            // Also filter out default black color if it's the only color (likely accidental)
+            $colors = [];
+            \Log::info('Product colors received (CREATE):', [
+                'has_colors' => $request->has('colors'),
+                'colors_raw' => $request->input('colors'),
+                'colors_type' => gettype($request->input('colors')),
+                'all_request_keys' => array_keys($request->except(['images', 'color_images']))
+            ]);
+            
+            if ($request->has('colors') && is_array($request->colors) && !empty($request->colors)) {
+                $colors = array_filter($request->colors, function($color) {
+                    return !empty($color) && trim($color) !== '';
+                });
+                // If only black (#000000 or #000) was sent and nothing else, treat as empty
+                if (count($colors) === 1 && in_array(strtolower($colors[0]), ['#000000', '#000', '000000', '000', 'black'])) {
+                    \Log::warning('Only black color detected, treating as empty', ['color' => $colors[0]]);
+                    $colors = [];
+                }
+            }
+            
+            \Log::info('Product colors after processing (CREATE):', ['colors' => $colors]);
+
             // Create product
             $product = Product::create([
                 'name' => $request->name,
@@ -158,7 +181,7 @@ class ProductsController extends Controller
                 'stock_status' => $request->stock_status,
                 'is_active' => $request->boolean('is_active'),
                 'sizes' => $this->generateSizes($request->size_from, $request->size_to),
-                'colors' => $request->colors ?? []
+                'colors' => $colors
             ]);
 
             // Handle general image uploads
@@ -268,6 +291,19 @@ class ProductsController extends Controller
                 'images.*.max' => 'Each image must be less than 10MB',
             ]);
 
+            // Handle colors - only save if provided and not empty
+            // Also filter out default black color if it's the only color (likely accidental)
+            $colors = [];
+            if ($request->has('colors') && is_array($request->colors) && !empty($request->colors)) {
+                $colors = array_filter($request->colors, function($color) {
+                    return !empty($color) && trim($color) !== '';
+                });
+                // If only black (#000000 or #000) was sent and nothing else, treat as empty
+                if (count($colors) === 1 && in_array(strtolower($colors[0]), ['#000000', '#000', '000000', '000', 'black'])) {
+                    $colors = [];
+                }
+            }
+
             // Update product
             $product->update([
                 'name' => $request->name,
@@ -280,7 +316,7 @@ class ProductsController extends Controller
                 'stock_status' => $request->stock_status,
                 'is_active' => $request->boolean('is_active'),
                 'sizes' => $this->generateSizes($request->size_from, $request->size_to),
-                'colors' => $request->colors ?? []
+                'colors' => $colors
             ]);
 
             // Handle general image uploads

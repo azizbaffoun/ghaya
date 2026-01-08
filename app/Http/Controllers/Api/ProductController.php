@@ -304,6 +304,12 @@ class ProductController extends Controller
                 $validated['slug'] = Str::slug($validated['name']);
             }
 
+            // Ensure colors is properly handled - don't save if empty or null
+            if (isset($validated['colors']) && (empty($validated['colors']) || !is_array($validated['colors']))) {
+                $validated['colors'] = [];
+            }
+            // If colors is not provided at all, don't set it (let it be null/empty)
+
             $product = Product::create($validated);
 
             return response()->json([
