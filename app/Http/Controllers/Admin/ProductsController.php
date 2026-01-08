@@ -170,6 +170,12 @@ class ProductsController extends Controller
             \Log::info('Product colors after processing (CREATE):', ['colors' => $colors]);
 
             // Create product
+            \Log::info('Creating product with colors:', [
+                'colors_to_save' => $colors,
+                'colors_count' => count($colors),
+                'colors_type' => gettype($colors)
+            ]);
+            
             $product = Product::create([
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
@@ -182,6 +188,12 @@ class ProductsController extends Controller
                 'is_active' => $request->boolean('is_active'),
                 'sizes' => $this->generateSizes($request->size_from, $request->size_to),
                 'colors' => $colors
+            ]);
+            
+            \Log::info('Product created, verifying colors saved:', [
+                'product_id' => $product->id,
+                'saved_colors' => $product->colors,
+                'saved_colors_type' => gettype($product->colors)
             ]);
 
             // Handle general image uploads
@@ -258,9 +270,34 @@ class ProductsController extends Controller
         $product->load(['category', 'images', 'variants']);
         $categories = Category::active()->ordered()->withTranslation(app()->getLocale())->get();
         
+        // Format images for frontend
+        $formattedImages = $product->images->map(function($image) {
+            return [
+                'id' => $image->id,
+                'url' => asset('storage/' . $image->image_path),
+                'path' => $image->image_path,
+                'is_primary' => $image->is_primary ?? false,
+                'color' => $image->color,
+                'alt_text' => $image->alt_text
+            ];
+        });
+        
+        // Group images by color for easier handling
+        $colorImages = [];
+        foreach ($formattedImages as $image) {
+            $color = $image['color'] ?? 'general';
+            if (!isset($colorImages[$color])) {
+                $colorImages[$color] = [];
+            }
+            $colorImages[$color][] = $image;
+        }
+        
         return response()->json([
             'success' => true,
-            'product' => $product,
+            'product' => array_merge($product->toArray(), [
+                'images' => $formattedImages,
+                'color_images' => $colorImages
+            ]),
             'categories' => $categories
         ]);
     }
@@ -318,6 +355,21 @@ class ProductsController extends Controller
                 'sizes' => $this->generateSizes($request->size_from, $request->size_to),
                 'colors' => $colors
             ]);
+
+            // Handle image deletions
+            if ($request->has('delete_images') && is_array($request->delete_images)) {
+                foreach ($request->delete_images as $imageId) {
+                    $image = $product->images()->find($imageId);
+                    if ($image) {
+                        // Delete file from storage
+                        if (\Storage::disk('public')->exists($image->image_path)) {
+                            \Storage::disk('public')->delete($image->image_path);
+                        }
+                        // Delete from database
+                        $image->delete();
+                    }
+                }
+            }
 
             // Handle general image uploads
             if ($request->hasFile('images')) {

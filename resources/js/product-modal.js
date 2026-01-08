@@ -1,6 +1,8 @@
 // Product Modal JavaScript
 let selectedColors = [];
-let selectedImages = [];
+let selectedImages = []; // New files to upload
+let existingImages = []; // Existing images from database
+let imagesToDelete = []; // IDs of images to delete
 let colorImages = {}; // New: Store images for each color
 let isEditMode = false;
 let currentProductId = null;
@@ -13,6 +15,8 @@ function resetForm() {
     }
     selectedColors = [];
     selectedImages = [];
+    existingImages = [];
+    imagesToDelete = [];
     colorImages = {};
     
     const colorsList = document.getElementById('colors_list');
@@ -131,6 +135,12 @@ function loadProductData(productId) {
             if (product.colors && Array.isArray(product.colors)) {
                 selectedColors = product.colors;
                 renderColors();
+            }
+            
+            // Load existing general images (non-color-specific)
+            if (product.images && Array.isArray(product.images)) {
+                existingImages = product.images.filter(img => !img.color || img.color === null);
+                renderExistingImages();
             }
             
             // Load color-specific images if available
@@ -482,14 +492,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Color Management
     const addColor = document.getElementById('add_color');
+    const colorPicker = document.getElementById('color_picker');
+    
+    // Track the last selected color value
+    let lastSelectedColor = '#FFFFFF';
+    
+    if (colorPicker) {
+        // Listen for color changes to track the actual selected color
+        colorPicker.addEventListener('input', function(e) {
+            lastSelectedColor = e.target.value;
+            console.log('Color picker changed to:', lastSelectedColor);
+        });
+        
+        // Also listen for change event
+        colorPicker.addEventListener('change', function(e) {
+            lastSelectedColor = e.target.value;
+            console.log('Color picker changed (change event) to:', lastSelectedColor);
+        });
+    }
+    
     if (addColor) {
-        addColor.addEventListener('click', function() {
-            const colorPicker = document.getElementById('color_picker');
+        addColor.addEventListener('click', function(e) {
+            e.preventDefault();
             if (colorPicker) {
-                // Get the current value from the color picker
-                let color = colorPicker.value;
+                // Use the tracked color value instead of reading directly
+                // This ensures we get the color the user actually selected
+                let color = lastSelectedColor || colorPicker.value;
                 
-                console.log('Color picker value before processing:', color);
+                console.log('=== ADD COLOR CLICKED ===');
+                console.log('Color picker current value:', colorPicker.value);
+                console.log('Last selected color:', lastSelectedColor);
+                console.log('Using color:', color);
                 
                 // Ensure color is in uppercase format (#RRGGBB)
                 if (color && color.startsWith('#')) {
@@ -499,21 +532,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 console.log('Processed color:', color);
-                console.log('Current selectedColors:', selectedColors);
+                console.log('Current selectedColors before add:', selectedColors);
                 
                 // Only add if color is valid and not already in the list
-                if (color && !selectedColors.includes(color)) {
+                if (color && color.length >= 4 && !selectedColors.includes(color)) {
                     selectedColors.push(color);
-                    console.log('Added color to selectedColors:', color);
+                    console.log('✅ Added color to selectedColors:', color);
                     console.log('Updated selectedColors:', selectedColors);
                     renderColors();
                     // Reset color picker to white after adding (not black)
                     colorPicker.value = '#FFFFFF';
+                    lastSelectedColor = '#FFFFFF';
                 } else if (selectedColors.includes(color)) {
                     alert('This color has already been added.');
                 } else {
-                    console.error('Invalid color value:', color);
+                    console.error('❌ Invalid color value:', color, 'Length:', color ? color.length : 0);
+                    alert('Please select a valid color first.');
                 }
+            } else {
+                console.error('Color picker element not found!');
             }
         });
     }
@@ -660,52 +697,42 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Preview element:', preview);
             
             if (preview) {
-                preview.innerHTML = '';
                 selectedImages = files;
-                
-                if (files.length > 0) {
-                    preview.classList.remove('hidden');
-                    console.log('Preview container classes after removing hidden:', preview.className);
-                    console.log('Preview container is visible:', !preview.classList.contains('hidden'));
-                    
-                    files.forEach((file, index) => {
-                        console.log(`Processing file ${index}:`, file.name, file.type, file.size);
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            console.log(`File ${index} loaded successfully, data URL length:`, e.target.result.length);
-                            const imageDiv = document.createElement('div');
-                            imageDiv.className = 'relative group';
-                            imageDiv.innerHTML = `
-                                <img src="${e.target.result}" alt="Preview ${index + 1}" style="width: 100%; height: 96px; object-fit: contain; border: 2px solid #e5e7eb; border-radius: 8px; background: white;" onload="console.log('Image ${index} loaded successfully')" onerror="console.error('Image ${index} failed to load')">
-                                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0); transition: all 0.2s; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                                    <button type="button" style="opacity: 0; background: #ef4444; color: white; border: none; border-radius: 50%; padding: 4px; cursor: pointer;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'" onclick="removeImage(${index})">
-                                        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            `;
-                            preview.appendChild(imageDiv);
-                            console.log(`Image div added for file ${index}`);
-                        };
-                        reader.onerror = function(e) {
-                            console.error(`Error reading file ${index}:`, e);
-                        };
-                        reader.readAsDataURL(file);
-                    });
-                } else {
-                    preview.classList.add('hidden');
-                }
+                // Re-render to show both existing and new images
+                renderExistingImages();
             }
         });
     }
 
-    window.removeImage = function(index) {
-        selectedImages.splice(index, 1);
-        // Re-render preview
+    // Render existing images from database
+    function renderExistingImages() {
         const preview = document.getElementById('image_preview');
+        if (!preview) return;
+        
         preview.innerHTML = '';
         
+        // Show existing images
+        if (existingImages.length > 0) {
+            preview.classList.remove('hidden');
+            existingImages.forEach((image, index) => {
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'relative group';
+                imageDiv.innerHTML = `
+                    <img src="${image.url}" alt="${image.alt_text || 'Product image ' + (index + 1)}" style="width: 100%; height: 96px; object-fit: contain; border: 2px solid #e5e7eb; border-radius: 8px; background: white;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0); transition: all 0.2s; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <button type="button" style="opacity: 0; background: #ef4444; color: white; border: none; border-radius: 50%; padding: 6px; cursor: pointer;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'" onclick="deleteExistingImage(${image.id}, ${index})" title="Delete image">
+                            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    ${image.is_primary ? '<span style="position: absolute; top: 4px; left: 4px; background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">PRIMARY</span>' : ''}
+                `;
+                preview.appendChild(imageDiv);
+            });
+        }
+        
+        // Also show newly selected images
         if (selectedImages.length > 0) {
             preview.classList.remove('hidden');
             selectedImages.forEach((file, index) => {
@@ -714,10 +741,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     const imageDiv = document.createElement('div');
                     imageDiv.className = 'relative group';
                     imageDiv.innerHTML = `
-                        <img src="${e.target.result}" alt="Preview ${index + 1}" class="w-full h-24 object-cover rounded-lg">
-                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center">
-                            <button type="button" class="opacity-0 group-hover:opacity-100 text-white bg-red-500 hover:bg-red-600 rounded-full p-1" onclick="removeImage(${index})">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <img src="${e.target.result}" alt="Preview ${index + 1}" style="width: 100%; height: 96px; object-fit: contain; border: 2px solid #e5e7eb; border-radius: 8px; background: white;">
+                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0); transition: all 0.2s; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <button type="button" style="opacity: 0; background: #ef4444; color: white; border: none; border-radius: 50%; padding: 4px; cursor: pointer;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'" onclick="removeImage(${index})">
+                                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
@@ -727,9 +754,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
                 reader.readAsDataURL(file);
             });
-        } else {
+        }
+        
+        if (existingImages.length === 0 && selectedImages.length === 0) {
             preview.classList.add('hidden');
         }
+    }
+
+    // Delete existing image
+    window.deleteExistingImage = function(imageId, index) {
+        if (confirm('Are you sure you want to delete this image?')) {
+            // Mark image for deletion
+            imagesToDelete.push(imageId);
+            // Remove from existing images array
+            existingImages.splice(index, 1);
+            // Re-render
+            renderExistingImages();
+        }
+    };
+
+    window.removeImage = function(index) {
+        selectedImages.splice(index, 1);
+        // Re-render preview
+        renderExistingImages();
     };
 
     // Form Submission
@@ -780,9 +827,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (hasDiscountEl) formData.append('has_discount', hasDiscountEl.checked ? '1' : '0');
             
             // Add colors as individual array elements
+            console.log('=== FORM SUBMISSION ===');
+            console.log('selectedColors to send:', selectedColors);
+            console.log('selectedColors length:', selectedColors.length);
             selectedColors.forEach((color, index) => {
+                console.log(`Appending color[${index}]:`, color);
                 formData.append(`colors[${index}]`, color);
             });
+            console.log('Total colors being sent:', selectedColors.length);
             if (sizeFromEl) formData.append('size_from', sizeFromEl.value);
             if (sizeToEl) formData.append('size_to', sizeToEl.value);
             
@@ -801,6 +853,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(`Adding image ${index}:`, file.name, file.type, file.size);
                 formData.append(`images[${index}]`, file);
             });
+            
+            // Add images to delete (if any)
+            if (isEditMode && imagesToDelete.length > 0) {
+                imagesToDelete.forEach((imageId, index) => {
+                    formData.append(`delete_images[${index}]`, imageId);
+                });
+                console.log('Images to delete:', imagesToDelete);
+            }
             
             if (isEditMode) {
                 formData.append('_method', 'PUT');
