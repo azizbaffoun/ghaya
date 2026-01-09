@@ -521,6 +521,44 @@
             console.log('toggleSection called but website-management.js not loaded');
         };
     }
+    // Product modal fallbacks - wait for real functions to load
+    (function() {
+        const storedProductId = { value: null };
+        const fallbackFn = function(productId) {
+            storedProductId.value = productId;
+            let attempts = 0;
+            const checkForRealFunction = setInterval(() => {
+                attempts++;
+                const currentFn = window.openProductModal;
+                // Check if function was replaced (real one has 'isEditMode' in code)
+                if (currentFn !== fallbackFn && currentFn && currentFn.toString().includes('isEditMode')) {
+                    clearInterval(checkForRealFunction);
+                    currentFn(storedProductId.value);
+                } else if (attempts > 50) {
+                    clearInterval(checkForRealFunction);
+                    console.error('openProductModal: Script failed to load');
+                }
+            }, 100);
+        };
+        if (typeof window.openProductModal === 'undefined') {
+            window.openProductModal = fallbackFn;
+        }
+    })();
+    if (typeof window.closeProductModal === 'undefined') {
+        window.closeProductModal = function() {
+            console.log('closeProductModal called but product-modal.js not loaded');
+        };
+    }
+    if (typeof window.openDeleteProductModal === 'undefined') {
+        window.openDeleteProductModal = function(id, name) {
+            console.log('openDeleteProductModal called but delete-modal.js not loaded');
+        };
+    }
+    if (typeof window.openCategoryModal === 'undefined') {
+        window.openCategoryModal = function() {
+            console.log('openCategoryModal called but product-modal.js not loaded');
+        };
+    }
     </script>
 </body>
 </html>
