@@ -103,10 +103,10 @@ class ProductController extends Controller
                 }
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => new ProductResource($product)
-            ]);
+        return response()->json([
+            'success' => true,
+            'data' => new ProductResource($product)
+        ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,

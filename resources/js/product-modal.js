@@ -829,12 +829,22 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add colors as individual array elements
             console.log('=== FORM SUBMISSION ===');
             console.log('selectedColors to send:', selectedColors);
+            console.log('selectedColors type:', typeof selectedColors);
+            console.log('selectedColors is array:', Array.isArray(selectedColors));
             console.log('selectedColors length:', selectedColors.length);
-            selectedColors.forEach((color, index) => {
-                console.log(`Appending color[${index}]:`, color);
-                formData.append(`colors[${index}]`, color);
-            });
-            console.log('Total colors being sent:', selectedColors.length);
+            
+            if (selectedColors && Array.isArray(selectedColors) && selectedColors.length > 0) {
+                selectedColors.forEach((color, index) => {
+                    console.log(`Appending color[${index}]:`, color, 'Type:', typeof color);
+                    if (color && color.trim() !== '') {
+                        formData.append(`colors[${index}]`, color);
+                    }
+                });
+                console.log('✅ Total colors being sent:', selectedColors.length);
+            } else {
+                console.warn('⚠️ WARNING: selectedColors is empty or invalid!', selectedColors);
+                console.warn('⚠️ Colors will NOT be sent in the request!');
+            }
             if (sizeFromEl) formData.append('size_from', sizeFromEl.value);
             if (sizeToEl) formData.append('size_to', sizeToEl.value);
             
