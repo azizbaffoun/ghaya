@@ -386,6 +386,8 @@ function closeDeleteProductModal() {
     }
     deleteProductId = null;
 }
+window.openDeleteProductModal = openDeleteProductModal;
+window.closeDeleteProductModal = closeDeleteProductModal;
 
 function closeProductModal() {
     const productModal = document.getElementById('productModal');

@@ -549,9 +549,33 @@
             console.log('closeProductModal called but product-modal.js not loaded');
         };
     }
+    // openDeleteProductModal fallback - wait for real function to load
     if (typeof window.openDeleteProductModal === 'undefined') {
-        window.openDeleteProductModal = function(id, name) {
-            console.log('openDeleteProductModal called but delete-modal.js not loaded');
+        (function() {
+            const storedParams = { id: null, name: null };
+            const fallbackFn = function(id, name) {
+                storedParams.id = id;
+                storedParams.name = name;
+                let attempts = 0;
+                const checkForRealFunction = setInterval(() => {
+                    attempts++;
+                    const currentFn = window.openDeleteProductModal;
+                    // Check if function was replaced (real one has 'deleteProductId' in code)
+                    if (currentFn !== fallbackFn && currentFn && currentFn.toString().includes('deleteProductId')) {
+                        clearInterval(checkForRealFunction);
+                        currentFn(storedParams.id, storedParams.name);
+                    } else if (attempts > 50) {
+                        clearInterval(checkForRealFunction);
+                        console.error('openDeleteProductModal: Script failed to load');
+                    }
+                }, 100);
+            };
+            window.openDeleteProductModal = fallbackFn;
+        })();
+    }
+    if (typeof window.closeDeleteProductModal === 'undefined') {
+        window.closeDeleteProductModal = function() {
+            console.log('closeDeleteProductModal called but product-modal.js not loaded');
         };
     }
     if (typeof window.openCategoryModal === 'undefined') {
